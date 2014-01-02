@@ -1,0 +1,31 @@
+# Compilers
+NVCC := @NVCC@
+
+# Program-specifics
+OBJS := magAriths.o magFactors.o magSolvers.o magUtils.o
+TARGET := magma.so
+
+# Compiler options
+FLAGS := @NCFLAGS@
+
+# linker options
+LDFLAGS := @LDFLAGS@
+LIBS := @LIBS@
+
+# Build rules
+.SUFFIXES: .c .cpp .o
+
+all: $(TARGET) 
+
+$(TARGET): $(OBJS)
+	$(NVCC) -shared $(LDFLAGS) $(LIBS) $(OBJS) -o $@
+
+%.o: %.c
+	$(NVCC) -c $(FLAGS) $< -o $@
+
+%.o: %.cpp
+	$(NVCC) -c $(FLAGS) $< -o $@
+
+clean:
+	rm -rf $(OBJS) $(TARGET)
+

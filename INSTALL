@@ -1,0 +1,281 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+magma R Package Version 1.3.0
+Installation and Release Notes (4/2/2013)
+Package Maintainer: Brian J. Smith <brian-j-smith@uiowa.edu>
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+I.   Overview
+     (a) Introduction
+     (b) Hardware requirements
+     (c) Supported operating systems
+II.  Installation Instructions
+     (a) NVIDIA CUDA Toolkit
+     (b) LAPACK shared library
+     (b) MAGMA software
+     (c) magma R package
+III. Known Issues
+IV.  Troubleshooting
+
+Appendices
+A. Compatible Graphics Cards
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+I. (a) Introduction
+--------------------------------------------------------------------------------
+
+The R package 'magma' provides a new set of matrix-class objects with method
+functions for matrix and linear algebra operations.  Operations are implemented
+using the MAGMA (Matrix Algebra for GPU and Multicore Architectures) library of
+C routines optimized for parallel processing on NVIDIA graphics cards and
+multicore CPUs (http://icl.cs.utk.edu/magma/).
+
+In particular, the magma package provides optimization for
+
+   * Matrix multiplication
+   * Cholesky, LU, and QR factorization
+   * Linear solvers based on Cholesky, LU, and QR factorization as well as
+     triangular matrices
+
+
+--------------------------------------------------------------------------------
+I. (b) Hardware requirements
+--------------------------------------------------------------------------------
+
+* A 64-bit Intel-compatible CPU is required.
+
+* An NVIDIA graphics card with a compute capability designation of 1.3 or
+  greater is required.  See Appendix A of this guide for a list of compatible
+  cards.
+
+
+--------------------------------------------------------------------------------
+I. (c) Supported operating systems
+--------------------------------------------------------------------------------
+
+* Development and testing of the package is performed on 64-bit Ubuntu Linux
+  10.04 with.  Other 64-bit Linux distributions should work as well.
+  Development is conducted with release 4.3 of the GCC tools; release 4.4 is
+  not supported and may cause errors.
+
+* At this time, the package has not been tried on OS X, although input from any
+  attempts to do so are welcome.  Windows is not supported currently due to a
+  lack of shared MAGMA libraries for that platform.
+
+
+--------------------------------------------------------------------------------
+II. (a) Installation of NVIDIA CUDA Toolkit
+--------------------------------------------------------------------------------
+
+CUDA is a general purpose parallel computing architecture that leverages the
+parallel processors in NVIDIA graphics cards to solve complex computational
+problems.  The CUDA Toolkit is a collection of libraries and callable routines
+that provide a programming interface to NVIDIA graphics cards.
+
+Perform the following steps to install the CUDA Toolkit version 3.0 or greater
+prior to the magma package:
+
+(i)  Go to http://www.nvidia.com/object/cuda_get.html.
+
+(ii) Follow the Getting Started Guide Linux to install the toolkit and (please)
+     verify its installation.
+
+
+--------------------------------------------------------------------------------
+II. (b) Installation of an LAPACK shared library
+--------------------------------------------------------------------------------
+
+A shared LAPACK library must be installed on your system to use magma.  The
+following links provide some pre-built LAPACK implementations:
+
+Reference Implementations: http://www.netlib.org/lapack/archives/
+Automatically Tuned Linear Algebra Software (ATLAS):
+   http://math-atlas.sourceforge.net/
+AMD Core Math Library (ACML): http://www.amd.com/acml/
+Intel Math Kernel Library (MKL): http://software.intel.com/en-us/intel-mkl/
+
+Install the shared library using one of the following two methods (for Linux
+systems):
+
+  (1) Preferably, have a system administer add the shared library to the
+      system-wide linker search path with 'ldconfig'.
+
+  (2) Unpack the files to a local directory <library-path> and add the path
+      name to your LD_LIBRARY_PATH environmental variable.  The typical way
+      to do this when using the Bourne Shell is with the command
+
+         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<library-path>
+
+      To make the assignment permanent, place this command in ~/.bashrc.  When
+      using the C Shell, the command is
+
+         setenv LD_LIBRARY_PATH <library-path>
+
+      or, to append the path to an existing assignment,
+
+         setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:<library-path>
+
+      which can be place in ~/.cshrc to make the assignment permanent.
+
+      Note that if this method is used to install shared libraries, the library
+      path must also be supplied in the appropriate configuration option when
+      the R package is installed (see section II(d)).
+
+
+--------------------------------------------------------------------------------
+II. (c) Installation of the MAGMA software
+--------------------------------------------------------------------------------
+
+Next, the MAGMA software (http://icl.cs.utk.edu/magma) must be installed.  To do
+so,
+
+* Extract the source code to a local directory, and follow the instructions
+  supplied with the code to make shared libraries 'libmagmablas.so' and
+  'libmagma.so'.  Additional help on making the shared magma libraries can be
+  found at http://www.hiplar.org/hiplar-M-installation.html#MAGMA.  After making
+  the shared libraries, refer to the previous section for instructions on
+  installing the libraries.
+
+
+--------------------------------------------------------------------------------
+II. (d) Installation of the magma R package
+--------------------------------------------------------------------------------
+
+Now you're ready to install the R package, which is available from
+http://cran.r-project.org/package=magma.  Installation may be done from a
+terminal command prompt or from within R itself with one of the following
+commands:
+
+  Terminal command prompt
+  -----------------------
+  R CMD INSTALL --configure-args="<options>" magma_<version>.tar.gz
+
+  R command prompt
+  ----------------
+  install.packages("magma", configure.args = "<options>")
+
+where <option> are optional configuration arguments that can be supplied to
+change default files and locations, and include
+
+  --with-r-home=DIR       full path to R installation []
+  --with-magma-lib=DIR    full path to MAGMA shared libraries []
+  --with-lapack=LIBS      LAPACK shared library [-llapack]
+  --with-cuda-home=DIR    full path to CUDA installation [/usr/local/cuda]
+
+LAPACK Option:
+
+The --with-lapack option can be used to link the magma package against
+alternative LAPACK shared libraries.  Usage of this option has the general form
+
+   --with-lapack=\"-L<LAPACK-library-path> -l<LAPACK-library-name>\"
+
+where <LAPACK-library-name> should exclude the library filename's 'lib' prefix
+and '.so' suffix.  Multiple library paths and names may be given, as required by
+the particular LAPACK implementation being used.
+
+Example:
+
+The following illustrate installation of magma package release 0.2.2-1 on a
+system in which CUDA is installed in '/opt/cuda', MAGMA shared libraries in
+'/opt/magma/lib', and with a ldconfig-registered LAPACK library named
+'liblapack.so' (the default for --with-lapack):
+
+  Terminal command prompt
+  -----------------------
+  R CMD INSTALL \
+    --configure-args="
+       --with-cuda-home=/opt/cuda \
+       --with-magma-lib=/opt/magma/lib" \
+    magma_0.2.2-1.tar.gz
+
+  R command prompt
+  ----------------
+  install.packages("magma",
+    configure.args = "--with-cuda-home=/opt/cuda
+      --with-magma-lib=/opt/magma/lib"
+  )
+
+
+--------------------------------------------------------------------------------
+III. Known Issues
+--------------------------------------------------------------------------------
+
+* Performance (speed) of the QR solver may be suboptimal due to workarounds for
+  a bug in version 1.3.0 of the magma_dgeqrs_gpu routine.
+
+
+--------------------------------------------------------------------------------
+IV. Troubleshooting
+--------------------------------------------------------------------------------
+
+Configuration Errors
+--------------------
+
+no acceptable C compiler found
+- Compilation of the magma package requires the GCC tools.  Confirm that the gcc
+  compiler is installed on your system and that its location is included in the
+  program search path.
+
+nvcc or CUDA headers not found!
+- Verify that a working installation of the CUDA Toolkit exists on your system.
+  See Section II(a).
+- Check that the '--with-cuda-home' configuration option is being set equal to 
+  the full and correct installation directory for the CUDA Toolkit.  See Section
+  II(d).
+
+R not found!
+- Verify that a working installation of R exists on your system by starting R
+  manually.
+- If the '--with-r-home' configuration option is being used, check that it is
+  set equal to the full and correct installation directory for R.  See Section
+  II(d).
+
+
+Compilation Errors
+------------------
+
+cannot find -llapack
+- Check that the shared LAPACK library 'liblapack.so' is installed on your
+  system.  If it is not and no other LAPACK libraries exist, install one.  See
+  Section II(b).
+- If an alternative, installed LAPACK library is desired, then specify it using
+  the configuration option '--with-lapack'.  See Section II(d).
+
+cannot find -lmagmablas or -lmagma
+- Check that the shared MAGMA libraries 'libmagmablas.so' and 'libmagma.so' are
+  installed on your system.  Install them, if not.  Refer to Section II(c).
+- If they are installed, try supplying their directory path using the
+  configuration option '--with-magma-lib'.  See Section II(d).
+
+
+R Run-time Errors
+-----------------
+
+unable to load shared library '<path-to-magma-libs>/magma.so':
+<shared-lib>: cannot open shared object file: No such file or directory
+- Verify that the shared library <shared-lib> is installed with one of the two
+  methods described in Section II(b).
+
+
+--------------------------------------------------------------------------------
+Appendix A. Compatible Graphics Cards
+--------------------------------------------------------------------------------
+
+The magma R package is compatible with the graphics cards listed below.
+
+NVIDIA
+------
+1.3 and later Compute Compatible cards listed at
+https://developer.nvidia.com/cuda-gpus.
+
+ATI
+---
+None
+
