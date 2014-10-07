@@ -56,12 +56,12 @@ setMethod("solve", signature(a = "magmaQR", b = "missing"),
       n <- nrow(a$qr)
       if(n != ncol(a$qr))
          stop("only square matrices can be inverted in 'solve'", call.=FALSE)
-      callGeneric(a, diag(n))
+      .Call("magQRSolve", a, diag(n))
    }
 )
 
 setMethod("solve", signature(a = "magmaQR", b = "numeric"),
-   function(a, b) as.numeric(callGeneric(a, as.matrix(b)))
+   function(a, b) as.numeric(.Call("magQRSolve", a, as.matrix(b)))
 )
 
 
@@ -92,6 +92,7 @@ setMethod("solve", signature(a = "matrix", b = "magma"),
 
 setMethod("backsolve", signature(r = "magma", x = "magma"),
    function(r, x, k, upper.tri, transpose) {
+      #cat("utri=", upper.tri, "trans=", transpose, "\n", sep="")
       .Call("magTriSolve", r, x, k, upper.tri, transpose)
    }
 )
@@ -115,4 +116,3 @@ forwardsolve <- function(l, x, k = ncol(l), upper.tri=FALSE, transpose=FALSE)
 {
    backsolve(l, x, k, upper.tri, transpose)
 }
-

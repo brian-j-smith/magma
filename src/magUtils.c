@@ -21,8 +21,9 @@
  ********************************************************************************/
 
 #include "magUtils.h"
+cublasHandle_t handle;
 
-#include <cublas.h>
+#include <cublas_v2.h>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 
@@ -52,14 +53,17 @@ SEXP magGetGPU(SEXP a, SEXP b)
 
 void magLoad()
 {
-   cublasInit();
+   magma_init();
+   cudaSetDevice( 0 );
+   cublasCreate_v2( &handle );
    checkCublasError("initialization failed");
 }
 
 
 void magUnload()
 {
-   cublasShutdown();
+   cublasDestroy(handle);
+   magma_finalize();
 }
 
 
@@ -71,7 +75,7 @@ int checkCudaError(const char *msg)
 	return 0;
 }
 
-char *cublasGetErrorString(cublasStatus err)
+char *cublasGetErrorString(cublasStatus_t err)
 {
 	switch(err) {
 		case CUBLAS_STATUS_SUCCESS :
@@ -98,7 +102,7 @@ char *cublasGetErrorString(cublasStatus err)
 
 int checkCublasError(const char *msg)
 {
-	cublasStatus err = cublasGetError();
+	cublasStatus_t err = cublasGetError();
 	if(err != CUBLAS_STATUS_SUCCESS)
 		error("CUBLAS %s : %s\n", msg, cublasGetErrorString(err));
 	return 0;

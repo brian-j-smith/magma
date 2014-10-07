@@ -23,7 +23,7 @@
 #include "magUtils.h"
 #include "magSolvers.h"
 
-#include <cublas.h>
+#include <cublas_v2.h>
 #include <magmablas.h>
 #include <magma.h>
 #include <magma_lapack.h>
@@ -50,7 +50,7 @@ SEXP magCholSolve(SEXP a, SEXP b)
 
       magma_dsetmatrix(N, N, A, N, dA, N);
       magma_dsetmatrix(N, NRHS, REAL(c), N, dB, N);
-      magma_dpotrs_gpu('U', N, NRHS, dA, N, dB, N, &info);
+      magma_dpotrs_gpu(magma_uplo_const('U'), N, NRHS, dA, N, dB, N, &info);
       magma_dgetmatrix(N, NRHS, dB, N, REAL(c), N);
 
       magma_free(dA);
@@ -90,7 +90,7 @@ SEXP magLUSolve(SEXP a, SEXP b)
 
       magma_dsetmatrix(N, N, A, N, dA, LDA);
       magma_dsetmatrix(N, NRHS, REAL(c), N, dB, LDB);
-      magma_dgetrs_gpu('N', N, NRHS, dA, LDA, ipiv, dB, LDB, &info);
+      magma_dgetrs_gpu(magma_trans_const('N'), N, NRHS, dA, LDA, ipiv, dB, LDB, &info);
       magma_dgetmatrix(N, NRHS, dB, LDB, REAL(c), N);
 
       magma_free(dA);
@@ -127,7 +127,7 @@ SEXP magQRSolve(SEXP a, SEXP b)
 
    magma_malloc_pinned((void**)&hwork, LWORK*sizeof(double));
 
-   if(LOGICAL_VALUE(gpu) && 0) {
+   if(LOGICAL_VALUE(gpu)) {
       SEXP workS = GET_SLOT(a, install("work"));
       int LENT = LENGTH(workS);
       double *dA, *dB, *dT, *work = REAL(workS);
@@ -140,9 +140,9 @@ SEXP magQRSolve(SEXP a, SEXP b)
       magma_dsetmatrix(M, NRHS, B, M, dB, M);
       magma_dsetvector(LENT, work, 1, dT, 1);
 
-      magma_dgeqrs_gpu(M, N, NRHS, dA, M, tau, dB, dT, M, hwork, LWORK, &info);
+      magma_dgeqrs3_gpu(M, N, NRHS, dA, M, tau, dT, dB, M, hwork, LWORK, &info);
 
-      magma_dgetmatrix(N, NRHS, dA, M, REAL(c), N);
+      magma_dgetmatrix(N, NRHS, dB, M, REAL(c), N);
 
       magma_free(dA);
       magma_free(dB);
@@ -192,7 +192,7 @@ SEXP magSolve(SEXP a, SEXP b)
       if(info < 0) error("illegal argument %d in 'magSolve'", -1 * info);
       else if(info > 0) error("non-singular matrix");
 
-      magma_dgetrs_gpu('N', N, NRHS, dA, N, ipiv, dB, N, &info);
+      magma_dgetrs_gpu(magma_trans_const('N'), N, NRHS, dA, N, ipiv, dB, N, &info);
       if(info < 0) error("illegal argument %d in 'magSolve'", -1 * info);
 
       magma_dgetmatrix(N, NRHS, dB, N, REAL(c), N);
@@ -226,7 +226,7 @@ SEXP magTriSolve(SEXP a, SEXP b, SEXP k, SEXP uprtri, SEXP transa)
    char UPLO = (LOGICAL_VALUE(uprtri) ? 'U' : 'L'),
         TRANSA = (LOGICAL_VALUE(transa) ? 'T' : 'N');
    double *A = REAL(PROTECT(AS_NUMERIC(a))), *B = REAL(PROTECT(AS_NUMERIC(b))),
-          *dA, *dB;
+          *dA, *dB, one=1., zero=0.;
 
    if((K <= 0) || (K > M)) error("invalid number of equations");
 
@@ -240,9 +240,9 @@ SEXP magTriSolve(SEXP a, SEXP b, SEXP k, SEXP uprtri, SEXP transa)
    magma_dsetmatrix(M, N, B, M, dB, M);
 
    if(LOGICAL_VALUE(gpu))
-      magma_dtrsm('L', UPLO, TRANSA, 'N', K, N, 1.0, dA, M, dB, M);
+      magma_dtrsm(magma_side_const('L'), magma_uplo_const(UPLO), magma_trans_const(TRANSA), magma_diag_const('N'), K, N, 1.0, dA, M, dB, M);
    else
-      cublasDtrsm('L', UPLO, TRANSA, 'N', K, N, 1.0, dA, M, dB, M);
+      cublasDtrsm(handle, cublas_side_const('L'), cublas_uplo_const(UPLO), cublas_trans_const(TRANSA), cublas_trans_const('N'), K, N, &one, dA, M, dB, M);
 
    magma_dgetmatrix(K, N, dB, M, REAL(c), K);
 
