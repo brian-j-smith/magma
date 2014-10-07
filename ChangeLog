@@ -2,6 +2,14 @@
 magma R package changes
 --------------------------------------------------------------------------------
 
+2014-10-06  Serguei Sokol <sokol@insa-toulouse.fr>
+
+   * magma_1.5.0-1.tar.gz: Package upgrade release.
+
+   * src/*.c:  Updated to magma 1.5.0 and cublas 6.0 (4.0+ is required) libraries
+   
+   * fixed few bugs in magQRSolve()
+
 2013-04-02  Brian Smith <brian-j-smith@uiowa.edu>
 
    * magma_1.3.0-1.tar.gz: Package upgrade release.

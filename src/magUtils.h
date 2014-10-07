@@ -42,5 +42,6 @@ extern "C" {
 #ifdef	__cplusplus
 }
 #endif
-
+#include <cublas_v2.h>
+extern cublasHandle_t handle;
 #endif	/* _MAGUTILS_H */

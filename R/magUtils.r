@@ -29,6 +29,3 @@
 .onUnload <- function(libname) {
    .C("magUnload", PACKAGE="magma")
 }
-
-
-

@@ -5,13 +5,11 @@
 #
 echo "Cleaning up after installing the magma package"
 
-for f in config.log config.status config.cache ; do
+for f in config.log config.status config.cache *.bck */*.bck; do
   if test -w $f ; then
     rm -f $f
   fi
 done
 
 cd src
-make clean
-rm -f Makefile
-
+if test -e Makefile; then make clean; rm -f Makefile; fi

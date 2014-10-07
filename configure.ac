@@ -1,4 +1,4 @@
-AC_INIT([magma], 1.3.0)
+AC_INIT([magma], 1.5.0)
 AC_CONFIG_AUX_DIR([tools])
 
 #################### GCC Compiler ####################
@@ -18,7 +18,7 @@ NVCC=${CUDA_HOME}/bin/nvcc
 AC_CHECK_FILE([${NVCC}],,
 	[AC_MSG_ERROR([nvcc not found!])])
 
-NCFLAGS="-arch=sm_13 -O2 -DADD_"
+NCFLAGS="-arch=sm_20 -O3 -DADD_"
 CUDA_INC=${CUDA_HOME}/include
 AC_MSG_CHECKING([for CUDA headers])
 AC_CHECK_FILE([${CUDA_INC}/cublas.h],
@@ -46,17 +46,39 @@ AC_ARG_WITH([lapack],
 )
 
 
-#################### MAGMA Libraries ####################
+#################### MAGMA home ####################
+AC_ARG_WITH([cuda-home],
+	[AC_HELP_STRING([--with-cuda-home=DIR],
+		[full path to CUDA installation @<:@/usr/local/cuda@:>@])],
+	[CUDA_HOME="$withval"], [CUDA_HOME=/usr/local/cuda])
+AC_MSG_RESULT([setting CUDA home directory to ${CUDA_HOME}])
 
-NCFLAGS="${NCFLAGS} -I./include"
+NVCC=${CUDA_HOME}/bin/nvcc
+AC_CHECK_FILE([${NVCC}],,
+	[AC_MSG_ERROR([nvcc not found!])])
 
-AC_ARG_WITH([magma-lib],
-	[AC_HELP_STRING([--with-magma-lib=DIR],
-		[full path to MAGMA shared libraries @<:@@:>@])],
-	[LDFLAGS="${LDFLAGS} -L$withval"]
+NCFLAGS="-arch=sm_20 -O3 -DADD_"
+CUDA_INC=${CUDA_HOME}/include
+AC_MSG_CHECKING([for CUDA headers])
+AC_CHECK_FILE([${CUDA_INC}/cublas.h],
+	[NCFLAGS="${NCFLAGS} -I${CUDA_INC}"],
+	[AC_MSG_ERROR([CUDA headers not found!])]
 )
 
-LIBS="${LIBS} -lmagmablas -lmagma"
+
+AC_ARG_WITH([magma-home],
+	[AC_HELP_STRING([--with-magma-home=DIR],
+		[full path to MAGMA installation @<:@@:>@])],
+	[MAGMA_HOME="$withval"], [MAGMA_HOME=/usr/local/magma]
+	[LDFLAGS="${LDFLAGS} -L$withval/lib"]
+)
+AC_MSG_CHECKING([for MAGMA headers])
+AC_CHECK_FILE([${MAGMA_HOME}/include/magma.h],
+	[NCFLAGS="${NCFLAGS} -I${MAGMA_HOME}/include"],
+	[AC_MSG_ERROR([MAGMA headers not found!])]
+)
+
+LIBS="${LIBS} -lmagma"
 
 
 #################### R Software ####################
