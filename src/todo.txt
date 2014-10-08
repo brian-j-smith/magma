@@ -1,0 +1,8 @@
+- cublas_v2.h
+- cublasStatus -> cublasStatus_t
+- add cublas_handle_t handle as global variable in magmaUtils.[ch];
+- add handle to cublas...() calls as the first parameter
+- in cublas...() one and zero are sent by ref.
+- magma_trans_const(TRANSA), cublas_trans_const(TRANSA)
+- cublas_uplo_const(UPLO), magma_uplo_const(UPLO)
+- cublas_side_const('L'), magma_side_const('L')

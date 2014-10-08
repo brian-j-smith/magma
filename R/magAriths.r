@@ -50,26 +50,28 @@ setMethod("Arith", signature(e1 = "numeric", e2 = "magma"),
 #################### Multiplication Operators ####################
 
 setMethod("%*%", signature(x = "magma", y = "magma"),
-   function(x, y) .Call("magMultmm", x, FALSE, y, FALSE)
+   function(x, y) { .Call("magMultmm", x, FALSE, y, FALSE) }
 )
 
 setMethod("%*%", signature(x = "magma", y = "matrix"),
-   function(x, y) .Call("magMultmm", x, FALSE, y, FALSE)
+   function(x, y) { .Call("magMultmm", x, FALSE, y, FALSE) }
 )
 
 setMethod("%*%", signature(x = "magma", y = "numeric"),
    function(x, y) {
+      #cat("mmn\n")
       if(ncol(x) == 1) .Call("magMultmm", x, FALSE, as.matrix(y), TRUE)
       else .Call("magMultmv", x, FALSE, y, TRUE)
    }
 )
 
 setMethod("%*%", signature(x = "matrix", y = "magma"),
-   function(x, y) .Call("magMultmm", x, FALSE, y, FALSE)
+   function(x, y) { .Call("magMultmm", x, FALSE, y, FALSE) }
 )
 
 setMethod("%*%", signature(x = "numeric", y = "magma"),
    function(x, y) {
+      #cat("nmm\n"); 
       if(nrow(y) == 1) .Call("magMultmm", as.matrix(x), FALSE, y, FALSE)
       else .Call("magMultmv", y, FALSE, x, FALSE)
    }
@@ -131,4 +133,3 @@ setMethod("tcrossprod", signature(x = "numeric", y = "magma"),
       else .Call("magMultmv", y, TRUE, x, FALSE)
    }
 )
-

@@ -23,7 +23,7 @@
 #include "magUtils.h"
 #include "magFactors.h"
 
-#include <cublas.h>
+#include <cublas_v2.h>
 #include <cuda.h>
 #include <magma.h>
 #include <magma_lapack.h>
@@ -48,7 +48,7 @@ SEXP magChol(SEXP a)
       magma_malloc((void**)&dB, N2*sizeof(double));
 
       magma_dsetmatrix(N, N, B, LDB, dB, LDB);
-      magma_dpotrf_gpu('U', N, dB, LDB, &info);
+      magma_dpotrf_gpu(magma_uplo_const('U'), N, dB, LDB, &info);
       magma_dgetmatrix(N, N, dB, LDB, B, LDB);
 
       magma_free(dB);
@@ -57,7 +57,7 @@ SEXP magChol(SEXP a)
 
       magma_malloc_pinned((void**)&hB, N2*sizeof(double));
       lapackf77_dlacpy(MagmaUpperStr, &N, &N, B, &LDB, hB, &LDB);
-      magma_dpotrf('U', N, hB, N, &info);
+      magma_dpotrf(magma_uplo_const('U'), N, hB, N, &info);
       lapackf77_dlacpy(MagmaUpperStr, &N, &N, hB, &LDB, B, &LDB);
 
       magma_free_pinned(hB);
@@ -150,7 +150,7 @@ SEXP magQR(SEXP a)
       magma_malloc((void**)&dT, LENT*sizeof(double));
 
       magma_dsetmatrix(M, N, A, M, dA, M);
-      magma_dgeqrf_gpu(M, N, dA, M, tau, dT, &info);
+      magma_dgeqrf3_gpu(M, N, dA, M, tau, dT, &info);
       magma_dgetmatrix(M, N, dA, M, A, M);
       magma_dgetvector(LENT, dT, 1, work, 1);
 
@@ -164,7 +164,7 @@ SEXP magQR(SEXP a)
       magma_malloc_pinned((void**)&hwork, LWORK*sizeof(double));
 
       lapackf77_dlacpy(MagmaUpperLowerStr, &M, &N, A, &M, hA, &M);
-      magma_dgeqrf(M, N, hA, M, tau, hwork, LWORK, &info);
+      magma_dgeqrf_ooc(M, N, hA, M, tau, hwork, LWORK, &info);
       lapackf77_dlacpy(MagmaUpperLowerStr, &M, &N, hA, &M, A, &M);
 
       magma_free_pinned(hA);

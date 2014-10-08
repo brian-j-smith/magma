@@ -23,8 +23,9 @@
 #include "magAriths.h"
 #include "magUtils.h"
 
-#include <cublas.h>
-#include <magmablas.h>
+#include <cublas_v2.h>
+#include <magma_types.h>
+#include <magma.h>
 
 
 SEXP magMultmm(SEXP a, SEXP transa, SEXP b, SEXP transb)
@@ -37,9 +38,10 @@ SEXP magMultmm(SEXP a, SEXP transa, SEXP b, SEXP transb)
        LDA = DIMA[0], LDB = DIMB[0], LDC = M;
    char TRANSA = (TA ? 'T' : 'N'), TRANSB = (TB ? 'T' : 'N');
    double *A = REAL(PROTECT(AS_NUMERIC(a))), *B = REAL(PROTECT(AS_NUMERIC(b))),
-          *dA, *dB, *dC;
+          *dA, *dB, *dC, one=1., zero=0.;
  
    if(DIMB[TB] != K) error("non-conformable matrices");
+   /*warning("here magMultmm");*/
 
    c = SET_SLOT(c, install(".Data"), allocMatrix(REALSXP, M, N));
    SET_SLOT(c, install("gpu"), duplicate(gpu));
@@ -51,10 +53,13 @@ SEXP magMultmm(SEXP a, SEXP transa, SEXP b, SEXP transb)
    magma_dsetmatrix(DIMA[0], DIMA[1], A, LDA, dA, LDA);
    magma_dsetmatrix(DIMB[0], DIMB[1], B, LDB, dB, LDB);
 
-   if(LOGICAL_VALUE(gpu))
-      magmablas_dgemm(TRANSA, TRANSB, M, N, K, 1.0, dA, LDA, dB, LDB, 0.0, dC, LDC);
-   else
-      cublasDgemm(TRANSA, TRANSB, M, N, K, 1.0, dA, LDA, dB, LDB, 0.0, dC, LDC);
+   if(LOGICAL_VALUE(gpu)) {
+      /*warning("here magma");*/
+      magmablas_dgemm(magma_trans_const(TRANSA), magma_trans_const(TRANSB), M, N, K, 1.0, dA, LDA, dB, LDB, 0.0, dC, LDC);
+   } else {
+      /*warning("here cublas");*/
+      cublasDgemm(handle, cublas_trans_const(TRANSA), cublas_trans_const(TRANSB), M, N, K, &one, dA, LDA, dB, LDB, &zero, dC, LDC);
+   }
 
    magma_dgetmatrix(M, N, dC, LDC, REAL(c), LDC);
 
@@ -77,7 +82,7 @@ SEXP magMultmv(SEXP a, SEXP transa, SEXP x, SEXP right)
        M = DIMA[0], N = DIMA[1], LENX = LENGTH(x), LENY = DIMA[TA], LDA=M;
    char TRANSA = (TA ? 'T' : 'N');
    double *A = REAL(PROTECT(AS_NUMERIC(a))), *X = REAL(PROTECT(AS_NUMERIC(x))),
-          *dA, *dX, *dY;
+          *dA, *dX, *dY, one=1., zero=0.;
 
    if(DIMA[!TA] != LENX) error("non-conformable matrices");
 
@@ -93,9 +98,9 @@ SEXP magMultmv(SEXP a, SEXP transa, SEXP x, SEXP right)
    magma_dsetvector(LENX, X, 1, dX, 1);
 
    if(LOGICAL_VALUE(gpu)) {
-      magmablas_dgemv(TRANSA, M, N, 1.0, dA, LDA, dX, 1, 0.0, dY, 1);
+      magmablas_dgemv(magma_trans_const(TRANSA), M, N, 1.0, dA, LDA, dX, 1, 0.0, dY, 1);
    } else {
-      cublasDgemv(TRANSA, M, N, 1.0, dA, LDA, dX, 1, 0.0, dY, 1);
+      cublasDgemv(handle, cublas_trans_const(TRANSA), M, N, &one, dA, LDA, dX, 1, &zero, dY, 1);
    }
 
    magma_dgetvector(LENY, dY, 1, REAL(y), 1);
