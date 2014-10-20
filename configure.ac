@@ -47,24 +47,6 @@ AC_ARG_WITH([lapack],
 
 
 #################### MAGMA home ####################
-AC_ARG_WITH([cuda-home],
-	[AC_HELP_STRING([--with-cuda-home=DIR],
-		[full path to CUDA installation @<:@/usr/local/cuda@:>@])],
-	[CUDA_HOME="$withval"], [CUDA_HOME=/usr/local/cuda])
-AC_MSG_RESULT([setting CUDA home directory to ${CUDA_HOME}])
-
-NVCC=${CUDA_HOME}/bin/nvcc
-AC_CHECK_FILE([${NVCC}],,
-	[AC_MSG_ERROR([nvcc not found!])])
-
-NCFLAGS="-arch=sm_20 -O3 -DADD_"
-CUDA_INC=${CUDA_HOME}/include
-AC_MSG_CHECKING([for CUDA headers])
-AC_CHECK_FILE([${CUDA_INC}/cublas.h],
-	[NCFLAGS="${NCFLAGS} -I${CUDA_INC}"],
-	[AC_MSG_ERROR([CUDA headers not found!])]
-)
-
 
 AC_ARG_WITH([magma-home],
 	[AC_HELP_STRING([--with-magma-home=DIR],
