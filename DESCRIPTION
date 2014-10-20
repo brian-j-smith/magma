@@ -1,8 +1,8 @@
 Package: magma
 Title: Matrix Algebra on GPU and Multicore Architectures
 Version: 1.5.0-1
-Date: 2014-10-07
-Authors@R: c(person("Brian", "Smith", middle="J.", role = c("aut", "cre"),
+Date: 2014-10-19
+Authors@R: c(person("Brian", "Smith", given="J", role = c("aut", "cre"),
 		email = "brian-j-smith@uiowa.edu"),
 	person("Serguei", "Sokol", role = c("com", "ctb"),
 		email="sokol@insa-toulouse.fr"))
