@@ -52,7 +52,6 @@ AC_ARG_WITH([magma-home],
 	[AC_HELP_STRING([--with-magma-home=DIR],
 		[full path to MAGMA installation @<:@@:>@])],
 	[MAGMA_HOME="$withval"], [MAGMA_HOME=/usr/local/magma]
-	[LDFLAGS="${LDFLAGS} -L$withval/lib"]
 )
 AC_MSG_CHECKING([for MAGMA headers])
 AC_CHECK_FILE([${MAGMA_HOME}/include/magma.h],
@@ -60,6 +59,7 @@ AC_CHECK_FILE([${MAGMA_HOME}/include/magma.h],
 	[AC_MSG_ERROR([MAGMA headers not found!])]
 )
 
+LDFLAGS="${LDFLAGS} -L${MAGMA_HOME}/lib"
 LIBS="${LIBS} -lmagma"
 
 
